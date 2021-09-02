@@ -1,0 +1,5 @@
+(executable
+ (public_name "main")
+ (modules Main)
+ (libraries kv_lite))
+
