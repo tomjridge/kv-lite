@@ -13,7 +13,7 @@
 (package 
  (name kv-lite)
  (synopsis "A simple Key Value store")
- (depends ocamlfind dune ppx_jane 
-          lwt lwt.unix caqti caqti-driver-sqlite3))
+ (depends ocamlfind dune 
+          lwt lwt.unix caqti caqti-dynload))
 
 

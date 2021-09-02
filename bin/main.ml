@@ -1,6 +1,6 @@
 let _ = ()
 
-open Kv_lite.Test
+open Kv_lite.Private.Test
 
 open Lwt.Infix
 
