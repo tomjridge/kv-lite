@@ -59,12 +59,14 @@ end
 
 let return_error e = return (Error (Caqti_error.show e))
 
-(* This stops everything; use set_error_hook for more nuanced behaviour *)
+(* NOTE this prints the error and exits; use set_error_hook for more
+   nuanced behaviour *)
 let default_error_hook = fun s -> 
   Printf.printf "Fatal error: %s\n%!" s;
   Stdlib.exit (-1)
 
-(* FIXME this should fail if the table already exists, or if the file exists *)
+(* FIXME this should probably fail if the table already exists, or if
+   the file exists *)
 let create ~fn =
   let uri = Uri.of_string @@ "sqlite3:"^fn^"?busy_timeout=60000" in
   Caqti_lwt.connect uri >>= function
@@ -109,9 +111,6 @@ let close t =
 let set_error_hook t f = t.error_hook <- f
 
 
-let (>>=?) m f =
-  m >>= (function | Ok x -> f x | Error err -> return_error err)
-
 let slow_insert (t:t) k v =
   let (module Db : Caqti_lwt.CONNECTION) = t.conn in
   Db.exec Q.insert (k, v) >>= function
@@ -128,7 +127,6 @@ let slow_delete t k =
     return ()
   | Ok x -> return x
 
-
 let find_opt t k  =
   let (module Db : Caqti_lwt.CONNECTION) = t.conn in
   Db.find_opt Q.find_opt k >>= function
@@ -137,35 +135,51 @@ let find_opt t k  =
     return None
   | Ok x -> return x
 
-let batch t ops =
+
+module Caqti_bind = struct
+  let (>>=?) m f =
+    m >>= (function | Ok x -> f x | Error err -> return (Error err))
+end
+
+(* FIXME this should use the error hook rather than returning a result
+   *)
+let batch t (ops: op list) =
+  let open Caqti_bind in
   let (module Db : Caqti_lwt.CONNECTION) = t.conn in
   let t1 = t.timer () in
-  Db.start () >>=? fun () -> 
-  begin 
-    ops |> iter_k (fun ~k:kont ops -> 
-        match ops with
-        | [] -> Lwt.return_ok ()
-        | (k,`Insert v)::rest -> 
-          Db.exec Q.insert (k,v) >>=? fun () -> 
-          kont rest
-        | (k, `Delete)::rest -> 
-          Db.exec Q.delete k >>=? fun () -> 
-          kont rest)
-  end >>= function
-  | Error e -> return (Error e)
+  begin
+    Db.start () >>=? fun () -> 
+    begin 
+      ops |> iter_k (fun ~k:kont ops -> 
+          match ops with
+          | [] -> Lwt.return_ok ()
+          | (k,`Insert v)::rest -> 
+            Db.exec Q.insert (k,v) >>=? fun () -> 
+            kont rest
+          | (k, `Delete)::rest -> 
+            Db.exec Q.delete k >>=? fun () -> 
+            kont rest)
+    end >>=? fun () -> 
+    Db.commit ()
+  end
+  >>= function
+  | Error e -> 
+    t.error_hook (Caqti_error.show e);
+    return ()
   | Ok () -> 
-    Db.commit () >>=? fun () -> 
     let t2 = t.timer () in
     t.last_batch_time <- t2 -. t1;
-    Lwt.return_ok ()
+    return ()
 
-let last_batch_time t = t.last_batch_time
+let _ = batch
+
+let last_batch_duration t = t.last_batch_time
 
 let set_time t f = t.timer <- f      
 
 let error_to_exn (x:'a or_error) = 
   match x with
   | Ok x -> return x
-  | Error e -> failwith e
+  | Error e -> Lwt.fail (Stdlib.Failure e)
   
 

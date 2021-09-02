@@ -48,10 +48,10 @@ module type S = sig
 
   (** following is fast because it batches multiple operations into a
      single transaction *)
-  val batch: t -> op list -> unit or_error Lwt.t
+  val batch: t -> op list -> unit Lwt.t
 
   (** for profiling *)
-  val last_batch_time: t -> float
+  val last_batch_duration: t -> float
 
   (** update the standard timer (Sys.time) with a possibly more accurate one *)
   val set_time: t -> (unit -> float) -> unit
