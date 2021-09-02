@@ -2,5 +2,5 @@
  (public_name "kv-lite")
  (name "kv_lite")
  (preprocess (pps ppx_bin_prot))
- (libraries lwt lwt.unix bin_prot bigstringaf))
+ (libraries lwt lwt.unix bin_prot bigstringaf caqti caqti-dynload caqti-lwt caqti-driver-sqlite3))
 
