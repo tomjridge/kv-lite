@@ -1,8 +1,8 @@
-(** Interface to kv-lite *)
+# A simple Key Value store using SQLite
 
+The interface looks as follows:
 
-module type S = sig
-
+```ocaml
   (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
   type op = string * [ `Insert of string | `Delete ]
 
@@ -14,7 +14,7 @@ module type S = sig
 
 
   (** runtime db connection; error hook; error flag *)
-  type t
+  type t 
 
   (** Error string if the db fails to open for some reason; kv-lite
      expects to use a lone database over which it has complete
@@ -56,8 +56,4 @@ module type S = sig
   (** update the standard timer (Sys.time) with a possibly more accurate one *)
   val set_time: t -> (unit -> float) -> unit
 
-  module Private : sig
-    module Test : module type of Test
-  end
-
-end
+```
