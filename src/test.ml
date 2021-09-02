@@ -1,4 +1,5 @@
 open Lwt.Infix
+open Util
 
 module Dynparam = struct
   type t = Pack : 'a Caqti_type.t * 'a -> t
@@ -62,22 +63,43 @@ let find_opt k (module Db : Caqti_lwt.CONNECTION) =
 let delete (module Db : Caqti_lwt.CONNECTION) k =
   Db.exec Q.delete k
 
-let batch (module Db : Caqti_lwt.CONNECTION) = 
-  Db.exec (Q.batch ()) ( ("k1","v1"),("k2","v2"))
-
 let (>>=?) m f =
   m >>= (function | Ok x -> f x | Error err -> Lwt.return (Error err))
 
+(* FIXME the hope is that this executes in a single transaction *)
+let batch (module Db : Caqti_lwt.CONNECTION) ops = 
+  Db.start () >>=? fun () -> 
+  begin 
+    ops |> iter_k (fun ~k:kont ops -> 
+        match ops with
+        | [] -> Lwt.return_ok ()
+        | (k,`Insert v)::rest -> 
+          Db.exec Q.insert (k,v) >>=? fun () -> 
+          kont rest
+        | (k, `Delete)::rest -> 
+          Db.exec Q.delete k >>=? fun () -> 
+          kont rest)
+  end >>= fun r ->
+  Db.commit () >>= fun r' -> 
+  match Result.is_error r || Result.is_error r' with
+  | true -> Lwt.return (if Result.is_error r then r else r')
+  | false -> Lwt.return_ok ()
+  
 let test db =
   (* Examples of statement execution: Create and populate the register. *)
   create db >>=? fun () ->
   insert db "k0" "v0" >>=? fun () -> 
   Printf.printf "%s\n%!" __LOC__;
-  batch db >>=? fun () ->
+  batch db [("k3",`Insert "v3");("k4",`Insert "v4")] >>=? fun () ->
   Printf.printf "%s\n%!" __LOC__;
   find_opt "k1" db >>=? fun v -> 
   begin match v with
     | None -> failwith "can't find k1"
+    | Some v -> Printf.printf "Found value %s\n%!" v
+  end;
+  find_opt "k3" db >>=? fun v -> 
+  begin match v with
+    | None -> failwith "can't find k3"
     | Some v -> Printf.printf "Found value %s\n%!" v
   end;
   Lwt.return (Ok ())
