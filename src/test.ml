@@ -44,7 +44,7 @@ module Q = struct
       ~oneshot:true
       Caqti_type.(tup2 (tup2 string string) (tup2 string string))
       {|
-INSERT INTO kv (key_,val) VALUES (?,?), (?,?) 
+INSERT OR REPLACE INTO kv (key_,val) VALUES (?,?), (?,?) 
 |}
                     
 end
@@ -92,9 +92,21 @@ let test db =
   Printf.printf "%s\n%!" __LOC__;
   batch db [("k3",`Insert "v3");("k4",`Insert "v4")] >>=? fun () ->
   Printf.printf "%s\n%!" __LOC__;
+  begin 
+    (5,[]) |> iter_k (fun ~k:kont (i,ops) -> 
+        match i > 100_000 with 
+        | true -> ops
+        | false -> 
+          let k = "k"^string_of_int i in
+          let v = "v"^string_of_int i in
+          kont (i+1,(k,`Insert v)::ops))
+    |> fun ops ->         
+    batch db ops
+  end >>=? fun () ->
+
   find_opt "k1" db >>=? fun v -> 
   begin match v with
-    | None -> failwith "can't find k1"
+    | None -> Printf.printf "can't find k1\n%!"
     | Some v -> Printf.printf "Found value %s\n%!" v
   end;
   find_opt "k3" db >>=? fun v -> 
