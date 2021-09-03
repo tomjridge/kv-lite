@@ -6,7 +6,7 @@ default: all
 -include Makefile.ocaml
 
 run:
-	time $(DUNE) exec main
+	time $(DUNE) exec bin/example.exe
 
 # for auto-completion of Makefile target
 clean::

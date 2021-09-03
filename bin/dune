@@ -1,5 +1,5 @@
 (executable
- (public_name "main")
- (modules Main)
+ (name "example")
+ (modules example)
  (libraries kv_lite))
 
