@@ -56,8 +56,4 @@ module type S = sig
   (** update the standard timer (Sys.time) with a possibly more accurate one *)
   val set_time: t -> (unit -> float) -> unit
 
-  module Private : sig
-    module Test : module type of Test
-  end
-
 end
