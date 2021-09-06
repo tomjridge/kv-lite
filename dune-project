@@ -1,5 +1,5 @@
 (lang dune 2.7)
-(name kv-lite)
+(name kv_lite)
 
 ;; for opam
 (authors              "Tom Ridge <tom.j.ridge@googlemail.com>")
@@ -11,9 +11,8 @@
 
 
 (package 
- (name kv-lite)
+ (name kv_lite)
  (synopsis "A simple Key Value store")
- (depends ocamlfind dune 
-          lwt lwt.unix caqti caqti-dynload))
+ (depends lwt caqti caqti-lwt caqti-driver-sqlite3)) ; caqti-dynload? seems to cause problems with findlib in later packages - mirage/index for example
 
 

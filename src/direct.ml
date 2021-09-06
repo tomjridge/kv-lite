@@ -1,3 +1,4 @@
+(*
 (** Direct interface, using Lwt_preemptive *)
 
 open Impl_intf
@@ -48,3 +49,4 @@ module Make_1 = struct
 end
 
 module Make_2 : Impl_intf.S_DIRECT = Make_1
+*)

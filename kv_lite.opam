@@ -7,12 +7,11 @@ homepage: "https://github.com/tomjridge/FIXME"
 doc: "https://tomjridge.github.io/FIXME/ocamldoc/index.html"
 bug-reports: "https://github.com/tomjridge/FIXME/issues"
 depends: [
-  "ocamlfind"
   "dune" {>= "2.7"}
   "lwt"
-  "lwt.unix"
   "caqti"
-  "caqti-dynload"
+  "caqti-lwt"
+  "caqti-driver-sqlite3"
   "odoc" {with-doc}
 ]
 build: [
