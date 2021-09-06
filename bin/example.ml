@@ -5,7 +5,7 @@ module Kv = Kv_lite
 open Kv_lite
 open Private.Util
 
-let slow_insert_n = 1
+let slow_insert_n = 1_000
 let batch_n = 100_000
 
 let go () = 

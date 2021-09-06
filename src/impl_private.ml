@@ -5,6 +5,10 @@ open Lwt
 open Lwt.Infix
 open Util
 
+module M = struct
+  type 'a t = 'a Lwt.t
+end
+
 (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
 type op = string * [ `Insert of string | `Delete ]
 
@@ -25,6 +29,13 @@ let with_table s = Printf.sprintf s table
 let _ = with_table
 
 module Q = struct
+
+  (* setting wal mode returns a string, so this is a find query for caqti *)
+  let wal_mode =
+    Caqti_request.find
+      Caqti_type.unit
+      Caqti_type.string
+      "PRAGMA journal_mode=WAL"    
 
   let drop =
     Caqti_request.exec Caqti_type.unit
@@ -57,7 +68,7 @@ module Q = struct
                     
 end
 
-let return_error e = return (Error (Caqti_error.show e))
+let return_caqti_error e = return (Error (Caqti_error.show e))
 
 (* NOTE this prints the error and exits; use set_error_hook for more
    nuanced behaviour *)
@@ -65,44 +76,49 @@ let default_error_hook = fun s ->
   Printf.printf "Fatal error: %s\n%!" s;
   Stdlib.exit (-1)
 
-(* FIXME this should probably fail if the table already exists, or if
-   the file exists *)
+module Caqti_bind = struct
+  let (>>=?) m f =
+    m >>= (function | Ok x -> f x | Error err -> return (Error err))
+end
+
 let create ~fn =
+  let open Caqti_bind in
   let uri = Uri.of_string @@ "sqlite3:"^fn^"?busy_timeout=60000" in
-  Caqti_lwt.connect uri >>= function
-  | Error e -> return_error e
-  | Ok conn -> 
+  begin
+    Caqti_lwt.connect uri >>=? fun conn -> 
     let (module Db : Caqti_lwt.CONNECTION) = conn in
-    Db.exec Q.drop () >>= function
-    | Error e -> return_error e
-    | Ok () -> 
-      Db.exec Q.create () >>= function
-    | Error e -> return_error e
-    | Ok () -> 
-      return @@ Ok {
+    Db.find Q.wal_mode () >>=? fun _ -> 
+    Db.exec Q.drop () >>=? fun () -> 
+    Db.exec Q.create () >>=? fun () -> 
+    return @@ Ok {
+      conn;
+      error_hook=default_error_hook;
+      timer=Sys.time;
+      last_batch_time=0.0
+    }
+  end >>= function
+  | Ok e -> return (Ok e)
+  | Error e -> return_caqti_error e
+
+(* open is OK to use on a non-existent db *)
+let open_ ~fn = 
+  let open Caqti_bind in
+  let uri = Uri.of_string @@ "sqlite3:"^fn^"?busy_timeout=60000" in
+  begin
+    Caqti_lwt.connect uri >>=? fun conn -> 
+    let (module Db : Caqti_lwt.CONNECTION) = conn in
+    Db.find Q.wal_mode () >>=? fun _ -> 
+    Db.exec Q.create () >>=? fun () -> 
+    return (Ok {
         conn;
         error_hook=default_error_hook;
         timer=Sys.time;
         last_batch_time=0.0
-      }
+      })
+  end >>= function 
+  | Ok e -> return (Ok e)
+  | Error e -> return_caqti_error e
 
-(* open is OK to use on a non-existent db *)
-let open_ ~fn = 
-  let uri = Uri.of_string @@ "sqlite3:"^fn^"?busy_timeout=60000" in
-  Caqti_lwt.connect uri >>= function
-  | Error e -> return_error e
-  | Ok conn -> 
-    let (module Db : Caqti_lwt.CONNECTION) = conn in
-    Db.exec Q.create () >>= function
-    | Error e -> return_error e
-    | Ok () -> 
-      return @@ Ok {
-        conn;
-        error_hook=(fun s -> 
-            Printf.printf "Fatal error: %s\n%!" s);
-        timer=Sys.time;
-        last_batch_time=0.0
-      }
 
 let close t =
   let (module Db : Caqti_lwt.CONNECTION) = t.conn in
@@ -136,10 +152,6 @@ let find_opt t k  =
   | Ok x -> return x
 
 
-module Caqti_bind = struct
-  let (>>=?) m f =
-    m >>= (function | Ok x -> f x | Error err -> return (Error err))
-end
 
 (* FIXME this should use the error hook rather than returning a result
    *)

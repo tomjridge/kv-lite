@@ -1,1 +1,1 @@
-include Impl_intf.S
+include Impl_intf.S_LWT

@@ -1,7 +1,11 @@
 (** Interface to kv-lite *)
 
+(** Generic over monad *)
+module type S_GENERIC = sig
 
-module type S = sig
+  module M : sig
+    type 'a t
+  end
 
   (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
   type op = string * [ `Insert of string | `Delete ]
@@ -10,7 +14,7 @@ module type S = sig
 
   (** This unsafe function allows you to discard the error case; an
      exception will be raised at runtime; only use for testing! *)
-  val error_to_exn : 'a or_error -> 'a Lwt.t
+  val error_to_exn : 'a or_error -> 'a M.t
 
 
   (** runtime db connection; error hook; error flag *)
@@ -20,12 +24,12 @@ module type S = sig
      expects to use a lone database over which it has complete
      control; the default table name is "kv_lite" just in case you
      need it *)
-  val open_ : fn:string -> t or_error Lwt.t
+  val open_ : fn:string -> t or_error M.t
 
-  val create : fn:string -> t or_error Lwt.t
+  val create : fn:string -> t or_error M.t
 
   (** disconnect cannot throw an error in caqti *)
-  val close : t -> unit Lwt.t
+  val close : t -> unit M.t
 
 
   (** Hook to catch post-initialization pre-close errors, which we
@@ -38,17 +42,17 @@ module type S = sig
      transaction -- so use batch operations if possible *)
 
   (** [slow_insert t k v] *)
-  val slow_insert: t -> string -> string -> unit Lwt.t
+  val slow_insert: t -> string -> string -> unit M.t
 
   (** [slow_delete t k v] *)
-  val slow_delete: t -> string -> unit Lwt.t
+  val slow_delete: t -> string -> unit M.t
 
   (** [find_opt t k] *)
-  val find_opt: t -> string -> string option Lwt.t
+  val find_opt: t -> string -> string option M.t
 
   (** following is fast because it batches multiple operations into a
      single transaction *)
-  val batch: t -> op list -> unit Lwt.t
+  val batch: t -> op list -> unit M.t
 
   (** for profiling *)
   val last_batch_duration: t -> float
@@ -57,3 +61,9 @@ module type S = sig
   val set_time: t -> (unit -> float) -> unit
 
 end
+
+(** Lwt standard instance *)
+module type S_LWT = S_GENERIC with type 'a M.t = 'a Lwt.t
+
+(** Direct instance *)
+module type S_DIRECT = S_GENERIC with type 'a M.t = 'a
