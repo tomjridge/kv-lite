@@ -8,18 +8,19 @@ open Private.Util
 let slow_insert_n = 1_000
 let batch_n = 100_000
 
+let time () = Unix.time ()
+
 let go () = 
   begin
     Printf.printf "Test starts\n%!";
-    let t1 = Sys.time () in
+    let t1 = time () in
     let fn = "test.db" in
     (* open db; create drops any existing db *)
     Kv.create ~fn >>= Kv.error_to_exn >>= fun t -> 
     Gc.full_major ();
-    let t2 = Sys.time () in
+    let t2 = time () in
     Printf.printf "Create completed in %f\n%!" (t2 -. t1);
     (* add some entries *)
-    let t1 = Sys.time () in
     1 |> iter_k (fun ~k:kont i -> 
         match i > slow_insert_n with
         | true -> return ()
@@ -28,10 +29,9 @@ let go () =
           kont (i+1))
     >>= fun () -> 
     Gc.full_major ();
-    let t2 = Sys.time () in
-    Printf.printf "%d slow inserts completed in %f\n%!" slow_insert_n (t2 -. t1);
+    let t3 = time () in
+    Printf.printf "%d slow inserts completed in %f\n%!" slow_insert_n (t3 -. t2);
     (* now a batch insert *)
-    let t1 = Sys.time () in
     let ops = 
       (1,[]) |> iter_k (fun ~k:kont (i,xs) -> 
           match i > batch_n with
@@ -42,8 +42,8 @@ let go () =
     in
     batch t ops >>= fun () -> 
     Gc.full_major ();
-    let t2 = Sys.time () in
-    Printf.printf "%d batch ops completed in %f\n%!" batch_n (t2 -. t1);
+    let t4 = time () in
+    Printf.printf "%d batch ops completed in %f\n%!" batch_n (t4 -. t3);
     close t >>= fun () -> 
     return ()
   end
@@ -53,18 +53,14 @@ let _ = Lwt_main.run (go ())
 
 (* Timings:
 
-time dune exec main
+time dune exec bin/example.exe
 Test starts
-Create completed in 0.004363
-1000 slow inserts completed in 1.093116
-100000 batch ops completed in 1.407928
+Create completed in 0.000000
+1000 slow inserts completed in 4.000000
+100000 batch ops completed in 1.000000
 
-real	0m12.821s
-user	0m1.189s
-sys	0m1.381s
-
-NOTE The real time doesn't seem to reflect the individual times. The
-slow inserts seem to take the extra wall clock time. Is it possible
-that Caqti is detaching these and returning before they complete?
+real	0m5.886s
+user	0m1.376s
+sys	0m1.074s
 
 *)
