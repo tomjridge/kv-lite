@@ -1,4 +1,4 @@
-(** Interface to kv-lite *)
+(** Implementation interfaces *)
 
 (** Generic over monad *)
 module type S_GENERIC = sig
