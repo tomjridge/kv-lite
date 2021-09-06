@@ -112,6 +112,13 @@ module Make_1 = struct
       return None
     | Ok x -> return x
 
+  let clear t = 
+    let (module Db : Caqti_monad.CONNECTION) = t.conn in
+    Db.exec Q.clear () >>= function
+    | Error e -> 
+      t.error_hook (Caqti_error.show e);
+      return ()
+    | Ok x -> return x
 
 
   (* FIXME this should use the error hook rather than returning a result

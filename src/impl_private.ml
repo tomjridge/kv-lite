@@ -12,7 +12,7 @@ end
 (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
 type op = string * [ `Insert of string | `Delete ]
 
-type 'a or_error = ('a,string)Result.t
+type 'a or_error = ('a,string)Stdlib.result
 
 type t = {
   conn: (module Caqti_lwt.CONNECTION);
@@ -65,6 +65,11 @@ module Q = struct
     Caqti_request.exec
       Caqti_type.string
       (with_table "DELETE FROM %s WHERE key_ = ?")
+
+  let clear = 
+    Caqti_request.exec
+      Caqti_type.unit
+      (with_table "DELETE FROM %s")
                     
 end
 
@@ -151,7 +156,14 @@ let find_opt t k  =
     return None
   | Ok x -> return x
 
-
+let clear t = 
+  let (module Db : Caqti_lwt.CONNECTION) = t.conn in
+  Db.exec Q.clear () >>= function
+  | Error e -> 
+    t.error_hook (Caqti_error.show e);
+    return ()
+  | Ok x -> return x
+  
 
 (* FIXME this should use the error hook rather than returning a result
    *)

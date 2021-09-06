@@ -10,7 +10,7 @@ module type S_GENERIC = sig
   (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
   type op = string * [ `Insert of string | `Delete ]
 
-  type 'a or_error = ('a,string)Result.t
+  type 'a or_error = ('a,string)Stdlib.result
 
   (** This unsafe function allows you to discard the error case; an
      exception will be raised at runtime; only use for testing! *)
@@ -56,6 +56,8 @@ module type S_GENERIC = sig
      single transaction *)
   val batch: t -> op list -> unit M.t
 
+  val clear: t -> unit M.t
+
   (** for profiling *)
   val last_batch_duration: t -> float
 
@@ -67,22 +69,6 @@ end
 (** Lwt interface - our standard interface *)
 module type S_LWT = S_GENERIC with type 'a M.t = 'a Lwt.t
 
-(*
-type run_in_main_t = {
-  run_in_main : 'a. (unit -> 'a Lwt.t) -> 'a;
-}
-*)
-
 (** Direct interface *)
 module type S_DIRECT = S_GENERIC with type 'a M.t = 'a
-
-(*
-  (** Error string if the db fails to open for some reason; kv-lite
-      expects to use a lone database over which it has complete
-      control; the default table name is "kv_lite" just in case you
-      need it *)
-  val open_ : run_in_main:run_in_main_t -> fn:string -> t or_error M.t
-
-  val create : run_in_main:run_in_main_t -> fn:string -> t or_error M.t      
-*)
 
