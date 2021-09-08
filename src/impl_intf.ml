@@ -72,3 +72,7 @@ module type S_LWT = S_GENERIC with type 'a M.t = 'a Lwt.t
 (** Direct interface *)
 module type S_DIRECT = S_GENERIC with type 'a M.t = 'a
 
+module type S_KYOTO = sig
+  include S_DIRECT
+  val sync: t -> unit
+end

@@ -12,10 +12,15 @@ module Impl_with_lwt = Impl_with_lwt
 
 module Impl_direct = Impl_direct
 
+(** {1 Kyoto cabinet backend} *)
+
+module Kyoto_impl = (Kyoto_impl : Impl_intf.S_KYOTO)
+
 
 (** {1 Private modules} *)
 
 module Private = struct
   module Util = Util
   module Test = Test
+  module Impl_private = Impl_private
 end

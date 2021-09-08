@@ -3,3 +3,8 @@
  (modules example)
  (libraries kv_lite))
 
+(executable
+ (name "kyoto_example")
+ (modules kyoto_example)
+ (libraries kv_lite))
+
