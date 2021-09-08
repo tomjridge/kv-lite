@@ -1,20 +1,16 @@
 (** Main interfaces to [kv-lite] *)
 
-(** {1 Lwt instance} *)
-
 module Impl_intf = Impl_intf
 
-module type S_LWT = Impl_intf.S_LWT
+module type S_GENERIC = Impl_intf.S_GENERIC
 
-include Impl
+(** {1 Lwt instance} *)
 
+module Impl_with_lwt = Impl_with_lwt
 
 (** {1 Direct-style instance} *)
 
-(** This is a direct-style interface, assuming Lwt main is running in
-   another system thread. NOTE the ocamldoc is not very good - type
-   ['a M.t] here is just ['a] *)
-module Direct_impl = Direct_v2.Make_2
+module Impl_direct = Impl_direct
 
 
 (** {1 Private modules} *)
