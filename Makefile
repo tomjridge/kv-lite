@@ -5,12 +5,14 @@ default: all
 
 all::
 	dune build bin/kyoto_example.exe
+	dune build bin/rocksdb_example.exe
 	dune build bin/example.exe
 
 -include Makefile.ocaml
 
 run:
-	time $(DUNE) exec bin/kyoto_example.exe
+	time $(DUNE) exec bin/rocksdb_example.exe
+#	time $(DUNE) exec bin/kyoto_example.exe
 #	time $(DUNE) exec bin/example.exe
 
 # for auto-completion of Makefile target

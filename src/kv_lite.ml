@@ -16,6 +16,10 @@ module Impl_direct = Impl_direct
 
 module Kyoto_impl = (Kyoto_impl : Impl_intf.S_KYOTO)
 
+(** {1 Rocksdb backend} *)
+
+module Rocksdb_impl = (Rocksdb_impl : Impl_intf.S_KYOTO)
+
 
 (** {1 Private modules} *)
 

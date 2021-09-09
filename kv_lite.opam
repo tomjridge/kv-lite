@@ -13,6 +13,7 @@ depends: [
   "caqti-lwt"
   "caqti-driver-sqlite3"
   "kyotocabinet"
+  "ahrocksdb"
   "odoc" {with-doc}
 ]
 build: [

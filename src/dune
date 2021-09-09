@@ -1,5 +1,5 @@
 (library
  (public_name "kv_lite")
  (name "kv_lite")
- (libraries lwt caqti caqti-lwt caqti.blocking caqti-driver-sqlite3 kyotocabinet))
+ (libraries lwt caqti caqti-lwt caqti.blocking caqti-driver-sqlite3 kyotocabinet ahrocksdb))
 

@@ -8,3 +8,9 @@
  (modules kyoto_example)
  (libraries kv_lite))
 
+
+(executable
+ (name "rocksdb_example")
+ (modules rocksdb_example)
+ (libraries kv_lite))
+
