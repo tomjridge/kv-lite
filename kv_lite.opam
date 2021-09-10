@@ -31,3 +31,6 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/tomjridge/FIXME.git"
+depexts: [
+  ["librocksdb-dev" "libkyotocabinet-dev" "libsqlite3-dev"] {os-family = "debian"}
+]
