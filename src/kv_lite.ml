@@ -14,12 +14,15 @@ module Impl_direct = Impl_direct
 
 (** {1 Kyoto cabinet backend} *)
 
-module Kyoto_impl = (Kyoto_impl : Impl_intf.S_KYOTO)
+module Kyoto_impl = (Kyoto_impl : Impl_intf.S_DIRECT)
 
 (** {1 Rocksdb backend} *)
 
-module Rocksdb_impl = (Rocksdb_impl : Impl_intf.S_KYOTO)
+module Rocksdb_impl = (Rocksdb_impl : Impl_intf.S_DIRECT)
 
+(** {1 Kv-hash backend} *)
+
+module Kv_hash_impl = (Kv_hash_impl : Impl_intf.S_DIRECT)
 
 (** {1 Private modules} *)
 

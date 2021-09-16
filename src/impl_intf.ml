@@ -64,6 +64,8 @@ module type S_GENERIC = sig
   (** update the standard timer (Sys.time) with a possibly more accurate one *)
   val set_time: t -> (unit -> float) -> unit
 
+  val sync: t -> unit M.t
+
 end
 
 (** Lwt interface - our standard interface *)
@@ -72,7 +74,3 @@ module type S_LWT = S_GENERIC with type 'a M.t = 'a Lwt.t
 (** Direct interface *)
 module type S_DIRECT = S_GENERIC with type 'a M.t = 'a
 
-module type S_KYOTO = sig
-  include S_DIRECT
-  val sync: t -> unit
-end

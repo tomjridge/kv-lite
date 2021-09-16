@@ -14,3 +14,8 @@
  (modules rocksdb_example)
  (libraries kv_lite))
 
+(executable
+ (name "direct_example")
+ (modules direct_example)
+ (libraries kv_lite))
+

@@ -227,6 +227,8 @@ module Make(M:M)(Connect:Caqti_connect_sig.S with type +'a future = 'a M.t) = st
 
   let error_to_exn = error_to_exn
 
+  let sync _t = return ()
+
 end  
 
 module With_lwt = struct

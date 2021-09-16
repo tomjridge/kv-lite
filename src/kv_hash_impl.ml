@@ -87,6 +87,8 @@ module Make_1 = struct
 
   let set_time t f = t.timer <- f      
 
+  let sync _t = () (* FIXME *)
+
 end
 
 module Make_2 : Impl_intf.S_DIRECT = Make_1
