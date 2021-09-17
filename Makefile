@@ -5,7 +5,7 @@ default: all
 
 all::
 	dune build bin/direct_example.exe
-	cp _build/default/bin/direct_example.exe .
+	cp -f _build/default/bin/direct_example.exe .
 
 #	dune build bin/kyoto_example.exe
 #	dune build bin/rocksdb_example.exe
@@ -21,3 +21,4 @@ run:
 
 # for auto-completion of Makefile target
 clean::
+	rm -f direct_example.exe

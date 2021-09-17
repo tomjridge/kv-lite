@@ -1,6 +1,6 @@
 (** Blocking implementation using kv-hash *)
 
-open Util
+(* open Util *)
 
 module Make_1 = struct
   module Kv = Kv_hash.String_string_map
@@ -42,13 +42,18 @@ module Make_1 = struct
     Printf.printf "Fatal error: %s\n%!" s;
     Stdlib.exit (-1)
 
-  let open_ ~fn:_ = failwith "FIXME"
-
   let create' ~fn = 
     Kv.create ~fn |> fun db -> 
     { db; fn; error_hook=default_error_hook;timer;last_batch_time }
 
   let create ~fn = create' ~fn |> fun x -> Ok x
+
+  (* FIXME open_ should open an existing db; this is just to get
+     initial perf testing working *)
+  let open_ ~fn = 
+    create ~fn
+      
+    (* failwith "FIXME kv_hash_impl: open_" *)
 
   let close t = Kv.close t.db
 
@@ -63,16 +68,7 @@ module Make_1 = struct
   let batch t ops =
     (* batch operations can only be puts, for some reason *)
     let t1 = t.timer () in
-    ops |> iter_k (fun ~k:kont ops -> 
-        match ops with
-        | [] -> ()
-        | (k,`Insert v)::rest -> 
-          slow_insert t k v;
-          kont rest
-        | (k,`Delete)::rest -> 
-          slow_delete t k;
-          kont rest)
-    |> fun () ->
+    Kv.batch t.db ops;
     let t2 = t.timer () in
     t.last_batch_time <- t2 -. t1;
     ()
