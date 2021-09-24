@@ -24,6 +24,14 @@ module Rocksdb_impl = (Rocksdb_impl : Impl_intf.S_DIRECT)
 
 module Kv_hash_impl = (Kv_hash_impl : Impl_intf.S_DIRECT)
 
+
+(** {1 Mini-btree backend} *)
+
+module Btree_impl = (Btree_impl : Impl_intf.S_DIRECT)
+
+
+
+
 (** {1 Private modules} *)
 
 module Private = struct
