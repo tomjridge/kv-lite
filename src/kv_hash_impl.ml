@@ -61,7 +61,10 @@ module Make_1 = struct
 
   let slow_insert t k v = Kv.insert t.db k v
 
-  let slow_delete t k = Kv.delete t.db k
+  let slow_delete _t _k = 
+    Printf.printf "%s: slow_delete not supported by kv_hash" __FILE__;
+    Stdlib.exit (-1)
+    (* Kv.delete t.db k *)
 
   let find_opt t k = Kv.find_opt t.db k
 
