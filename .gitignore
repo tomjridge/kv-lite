@@ -1,3 +1,4 @@
 /test.db
 /*.exe
 /test.db.values
+/test.db.btree

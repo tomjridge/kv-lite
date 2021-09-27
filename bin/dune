@@ -1,17 +1,6 @@
 (executable
- (name "example")
- (modules example)
- (libraries kv_lite))
-
-(executable
- (name "kyoto_example")
- (modules kyoto_example)
- (libraries kv_lite))
-
-
-(executable
- (name "rocksdb_example")
- (modules rocksdb_example)
+ (name "lwt_example")
+ (modules lwt_example)
  (libraries kv_lite))
 
 (executable

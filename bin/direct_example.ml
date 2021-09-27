@@ -1,4 +1,4 @@
-(* Direct examples: Kyoto Cabinet, Rocksdb and kv-hash *)
+(* Direct examples: Kyoto Cabinet, Rocksdb, kv-hash, mini-btree *)
 
 open Kv_lite.Private.Util
 
@@ -11,6 +11,7 @@ let impl =
   | ["kc"] -> `KC
   | ["rocks"] -> `Rocks
   | ["hash"] -> `Kv_hash
+  | ["btree"] -> `Btree
   | [] -> failwith "Need a command line arg for implementation to test"
   | [x] -> failwith (Printf.sprintf "Unrecognized command line arg: %s\n" x)
   | _::_::_ -> failwith "Too many command line args"
@@ -21,12 +22,15 @@ let m : (module Kv_lite.Impl_intf.S_DIRECT) =
   | `KC -> (module Kv_lite.Kyoto_impl)
   | `Rocks -> (module Kv_lite.Rocksdb_impl)
   | `Kv_hash -> (module Kv_lite.Kv_hash_impl)
+  | `Btree -> (module Kv_lite.Btree_impl)
 
 module Kv : Kv_lite.Impl_intf.S_DIRECT = (val m)
 open Kv
 
 let slow_insert_n = 1_000
-let batch_n = 100_000
+
+let batch_n = 1
+let batch_sz = 500_000
 
 let time () = Unix.time ()
 
@@ -40,27 +44,33 @@ let go () =
     let t2 = time () in
     Printf.printf "Create completed in %f\n%!" (t2 -. t1);
     (* add some entries *)
-    1 |> iter_k (fun ~k:kont i -> 
-        match i > slow_insert_n with
-        | true -> return ()
-        | false -> 
-          slow_insert t (string_of_int i) (string_of_int i) >>= fun () -> 
-          kont (i+1))
-    >>= fun () -> 
+    begin
+      1 |> iter_k (fun ~k:kont i -> 
+          match i > slow_insert_n with
+          | true -> return ()
+          | false -> 
+            slow_insert t (string_of_int i) (string_of_int i) >>= fun () -> 
+            kont (i+1))
+    end;
     let t3 = time () in
     Printf.printf "%d slow inserts completed in %f\n%!" slow_insert_n (t3 -. t2);
     (* now a batch insert *)
-    let ops = 
-      (1,[]) |> iter_k (fun ~k:kont (i,xs) -> 
-          match i > batch_n with
-          | true -> xs
-          | false -> 
-            let op = (string_of_int i,`Insert (string_of_int i)) in
-            kont (i+1, op::xs))
-    in
-    batch t ops >>= fun () -> 
+    batch_n |> iter_k (fun ~k:kont1 n -> 
+        match n > 0 with
+        | false -> ()
+        | true -> 
+          let ops = 
+            (1,[]) |> iter_k (fun ~k:kont (i,xs) -> 
+                match i > batch_sz with
+                | true -> xs
+                | false -> 
+                  let op = (string_of_int i,`Insert (string_of_int i)) in
+                  kont (i+1, op::xs))
+          in
+          batch t ops;
+          kont1 (n-1));
     let t4 = time () in
-    Printf.printf "%d batch ops completed in %f\n%!" batch_n (t4 -. t3);
+    Printf.printf "%d batches of size %d ops completed in %f\n%!" batch_n batch_sz (t4 -. t3);
     sync t >>= fun () -> 
     let t5 = time () in
     Printf.printf "Sync in %f\n%!" (t5 -. t4);
@@ -71,12 +81,5 @@ let go () =
   end
 
 let _ = go ()
-
-
-(* Timings:
-
-
-*)
-
 
 

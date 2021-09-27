@@ -30,6 +30,9 @@ module Kv_hash_impl = (Kv_hash_impl : Impl_intf.S_DIRECT)
 module Btree_impl = (Btree_impl : Impl_intf.S_DIRECT)
 
 
+(** {2 Hashtbl bacckend, for testing} *)
+
+module Hashtbl_impl = Hashtbl_impl
 
 
 (** {1 Private modules} *)
