@@ -7,9 +7,6 @@ module M = struct
 end
 open M
 
-(** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
-type op = string * [ `Insert of string | `Delete ]
-
 type 'a or_error = ('a,string)Stdlib.result
 
 let ( >>= ) m f = m |> f

@@ -12,9 +12,6 @@ module Make_1 = struct
   end
   open M
 
-  (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
-  type op = string * [ `Insert of string | `Delete ]
-
   type 'a or_error = ('a,string)Stdlib.result
 
   let ( >>= ) m f = m |> f
@@ -52,12 +49,15 @@ module Make_1 = struct
 
   (* FIXME open_ should open an existing db; this is just to get
      initial perf testing working *)
-  let open_ ~fn = 
+  let open_ ~fn =
+    Printf.printf "WARNING!!! open_ called on Btree_impl, but create will be called\n%!";    
     create ~fn
       
     (* failwith "FIXME kv_hash_impl: open_" *)
 
-  let close t = Kv.close t.db
+  let close t = 
+    Printf.printf "WARNING!!! close called on Btree_impl, but flush needed\n%!";    
+    Kv.close t.db
 
   let set_error_hook t f = t.error_hook <- f
 
@@ -76,6 +76,7 @@ module Make_1 = struct
     ()
 
   let clear t =
+    Printf.printf "WARNING!!! clear called on Btree_impl\n%!";
     close t;
     create' ~fn:t.fn |> function t' -> 
       t.db <- t'.db;

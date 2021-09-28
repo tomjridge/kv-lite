@@ -1,5 +1,8 @@
+(include_subdirs unqualified)
+
 (library
  (public_name "kv_lite")
  (name "kv_lite")
- (libraries lwt caqti caqti-lwt caqti.blocking caqti-driver-sqlite3 kyotocabinet ahrocksdb kv_hash mini-btree))
+ (preprocess (pps ppx_sexp_conv))
+ (libraries lwt caqti caqti-lwt caqti.blocking caqti-driver-sqlite3 kyotocabinet ahrocksdb kv_hash mini-btree fmt zarith digestif)) ; (fmt,zarith,digestif) for base58
 

@@ -41,4 +41,5 @@ module Private = struct
   module Util = Util
   module Test = Test
   module Impl_private = Impl_private
+  module Trace = Trace
 end

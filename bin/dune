@@ -8,3 +8,8 @@
  (modules direct_example)
  (libraries kv_lite))
 
+(executable
+ (name "replay")
+ (modules replay)
+ (libraries kv_lite))
+

@@ -22,3 +22,8 @@ let trace s =
   (* print_endline s *)
   ()
 [@@warning "-27"]
+
+
+(** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
+type ('k,'v) op = 'k * [ `Insert of 'v | `Delete ]
+

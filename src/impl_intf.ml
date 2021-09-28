@@ -1,14 +1,13 @@
 (** Implementation interfaces *)
 
+open Util
+
 (** Generic over monad *)
 module type S_GENERIC = sig
 
   module M : sig
     type 'a t
   end
-
-  (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
-  type op = string * [ `Insert of string | `Delete ]
 
   type 'a or_error = ('a,string)Stdlib.result
 
@@ -54,7 +53,7 @@ module type S_GENERIC = sig
 
   (** following is fast because it batches multiple operations into a
      single transaction *)
-  val batch: t -> op list -> unit M.t
+  val batch: t -> (string,string)op list -> unit M.t
 
   val clear: t -> unit M.t
 

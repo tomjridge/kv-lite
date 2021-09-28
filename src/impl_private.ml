@@ -18,9 +18,6 @@ module Make(M:M)(Connect:Caqti_connect_sig.S with type +'a future = 'a M.t) = st
   module M = M
   open M
 
-  (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
-  type op = string * [ `Insert of string | `Delete ]
-
   type 'a or_error = ('a,string)Stdlib.result
 
   type t = {
@@ -191,7 +188,7 @@ module Make(M:M)(Connect:Caqti_connect_sig.S with type +'a future = 'a M.t) = st
 
   (* FIXME this should use the error hook rather than returning a result
   *)
-  let batch t (ops: op list) =
+  let batch t (ops: _ op list) =
     let open Caqti_bind in
     let (module Db : Connect.CONNECTION) = t.conn in
     let t1 = t.timer () in
