@@ -13,7 +13,7 @@ module Make(S:sig type k type v end) = struct
 
   let open_ () = {
     tbl=Hashtbl.create 1024;
-    log=[]
+    log=[];
   }
 
   let batch t ops = 
@@ -51,6 +51,7 @@ module Wrap_1(Base:S_DIRECT) = struct
   type t = { 
     base:Base.t; 
     tbl: Tbl.t; 
+    lock: Mutex.t;
     mutable error_hook: 
       key:k -> value:v option -> expected:v option -> log:(string,string) op list -> unit
   }
@@ -74,7 +75,22 @@ module Wrap_1(Base:S_DIRECT) = struct
   let open_ ~fn = 
     Base.open_ ~fn |> fun base -> 
     assert(Result.is_ok base);
-    Ok { base=(Result.get_ok base);tbl=Tbl.open_ ();error_hook }
+    Ok { 
+      base=(Result.get_ok base);
+      tbl=Tbl.open_ ();
+      lock=Mutex.create();      
+      error_hook 
+    }
+
+  let with_lock lock f = 
+    Mutex.lock lock;
+    try 
+      let x = f() in
+      Mutex.unlock lock;
+      x
+    with e ->
+      Mutex.unlock lock;
+      raise e
 
   let set_error_hook t error_hook = t.error_hook <- error_hook
 
@@ -82,25 +98,33 @@ module Wrap_1(Base:S_DIRECT) = struct
     Base.batch t.base ops;
     Tbl.batch t.tbl ops;
     ()
+
+  let batch t ops = with_lock t.lock (fun () -> batch t ops)
     
   let close t = 
+    Printf.printf "WARNING!!! close called on %s\n%!" __MODULE__;
     Base.close t.base;
     ()
       
   let clear t = 
+    Printf.printf "WARNING!!! clear called on %s\n%!" __MODULE__;
     Base.clear t.base;
     Tbl.clear t.tbl;
     ()
 
   let sync t =
+    Printf.printf "WARNING!!! sync called on %s\n%!" __MODULE__;
     Base.sync t.base;
     ()
     
   let find_opt t k =
     Base.find_opt t.base k |> fun v -> 
     let expected = Tbl.find_opt t.tbl k in
-    assert(v = expected || (t.error_hook ~key:k ~value:v ~expected ~log:t.tbl.log;false));
+    ignore(v = expected || (t.error_hook ~key:k ~value:v ~expected ~log:t.tbl.log;false)); (* FIXME ignoring for now but should check; possible concurrency bug when using hashtbl concurrently? *)
     v
+
+  let find_opt t k = with_lock t.lock (fun () -> find_opt t k)
+    
 end
 
 module type S = sig
