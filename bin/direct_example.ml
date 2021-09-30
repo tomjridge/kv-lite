@@ -12,6 +12,7 @@ let impl =
   | ["rocks"] -> `Rocks
   | ["hash"] -> `Kv_hash
   | ["btree"] -> `Btree
+  | ["lmdb"] -> `Lmdb
   | [] -> failwith "Need a command line arg for implementation to test"
   | [x] -> failwith (Printf.sprintf "Unrecognized command line arg: %s\n" x)
   | _::_::_ -> failwith "Too many command line args"
@@ -23,6 +24,7 @@ let m : (module Kv_lite.Impl_intf.S_DIRECT) =
   | `Rocks -> (module Kv_lite.Rocksdb_impl)
   | `Kv_hash -> (module Kv_lite.Kv_hash_impl)
   | `Btree -> (module Kv_lite.Btree_impl)
+  | `Lmdb -> (module Kv_lite.Lmdb_impl)
 
 module Kv : Kv_lite.Impl_intf.S_DIRECT = (val m)
 open Kv

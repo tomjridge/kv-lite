@@ -4,5 +4,7 @@
  (public_name "kv_lite")
  (name "kv_lite")
  (preprocess (pps ppx_sexp_conv))
- (libraries lwt caqti caqti-lwt caqti.blocking caqti-driver-sqlite3 kyotocabinet ahrocksdb kv_hash mini-btree fmt zarith digestif)) ; (fmt,zarith,digestif) for base58
+ (libraries lwt caqti caqti-lwt caqti.blocking caqti-driver-sqlite3 kyotocabinet ahrocksdb kv_hash mini-btree lmdb )) 
+
+; (fmt zarith digestif) for base58
 

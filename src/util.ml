@@ -27,3 +27,5 @@ let trace s =
 (** Operations are insert: (k,`Insert v), or delete: (k,`Delete) *)
 type ('k,'v) op = 'k * [ `Insert of 'v | `Delete ]
 
+type 'a or_error = ('a,string)Stdlib.result
+

@@ -9,8 +9,6 @@ module type S_GENERIC = sig
     type 'a t
   end
 
-  type 'a or_error = ('a,string)Stdlib.result
-
   (** This unsafe function allows you to discard the error case; an
      exception will be raised at runtime; only use for testing! *)
   val error_to_exn : 'a or_error -> 'a M.t

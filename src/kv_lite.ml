@@ -24,13 +24,17 @@ module Rocksdb_impl = (Rocksdb_impl : Impl_intf.S_DIRECT)
 
 module Kv_hash_impl = (Kv_hash_impl : Impl_intf.S_DIRECT)
 
+(** {1 Lmdb backend} *)
+
+module Lmdb_impl = (Lmdb_impl : Impl_intf.S_DIRECT)
 
 (** {1 Mini-btree backend} *)
 
 module Btree_impl = (Btree_impl : Impl_intf.S_DIRECT)
 
 
-(** {2 Hashtbl bacckend, for testing} *)
+
+(** {1 Hashtbl bacckend, for testing} *)
 
 module Hashtbl_impl = Hashtbl_impl
 
