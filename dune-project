@@ -13,6 +13,6 @@
 (package 
  (name kv_lite)
  (synopsis "A simple Key Value store")
- (depends lwt caqti caqti-lwt caqti-driver-sqlite3 kyotocabinet ahrocksdb)) ; caqti-dynload? seems to cause problems with findlib in later packages - mirage/index for example
+ (depends lwt caqti caqti-lwt caqti-driver-sqlite3 kyotocabinet ahrocksdb lmdb)) ; caqti-dynload? seems to cause problems with findlib in later packages - mirage/index for example
 
 
