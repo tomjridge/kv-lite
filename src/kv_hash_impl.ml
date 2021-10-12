@@ -3,7 +3,7 @@
 (* open Util *)
 
 module Make_1 = struct
-  module Kv = Kv_hash.String_string_map
+  module Kv = Kv_hash.Nv_map_ss
 
   module M = struct
     type 'a t = 'a
